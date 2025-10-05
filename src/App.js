@@ -10,6 +10,7 @@ import Register from './pages/Register';
 import Ask from './pages/Ask';
 import JobMatch from './pages/JobMatch';
 import Analytics from './pages/Analytics';
+import { currentUser, isRecruiter } from './api';
 
 function useHashRoute() {
   const [hash, setHash] = useState(window.location.hash || '#/');
@@ -22,6 +23,7 @@ function useHashRoute() {
 }
 
 function HomePage() {
+  const recruiter = isRecruiter();
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
       <div className="text-center mb-12">
@@ -34,6 +36,7 @@ function HomePage() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 mt-10">
+        {!recruiter && (
         <a href="#/upload" className="group block">
           <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-8 border-2 border-transparent hover:border-teal-500">
             <div className="flex items-center gap-4 mb-4">
@@ -49,6 +52,7 @@ function HomePage() {
             </p>
           </div>
         </a>
+        )}
 
         <a href="#/search" className="group block">
           <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-8 border-2 border-transparent hover:border-indigo-500">
@@ -98,6 +102,24 @@ function HomePage() {
           </div>
         </a>
 
+        {recruiter && (
+        <a href="#/analytics" className="group block">
+          <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-8 border-2 border-transparent hover:border-rose-500">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-rose-100 rounded-lg flex items-center justify-center group-hover:bg-rose-200 transition-colors">
+                <svg className="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-semibold text-gray-900">Analytics</h2>
+            </div>
+            <p className="text-gray-600">
+              View stats like total resumes, top skills, and uploads timeline.
+            </p>
+          </div>
+        </a>
+        )}
+
         
       </div>
 
@@ -114,19 +136,46 @@ function HomePage() {
 function Router() {
   const hash = useHashRoute();
   const path = hash.replace(/^#/, '') || '/';
+  const user = currentUser();
   
-  if (path.startsWith('/upload')) return <Upload />;
+  if (path.startsWith('/upload')) {
+    if (user?.role === 'recruiter') {
+      return (
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Upload Restricted</h1>
+          <p className="text-gray-600">Recruiters cannot upload resumes. Please use the Search or Jobs pages.</p>
+        </div>
+      );
+    }
+    return <Upload />;
+  }
   if (path.startsWith('/search')) return <Search />;
   // Specific job match route before generic /jobs
   if (path.startsWith('/jobs/') && path.endsWith('/match')) {
     const id = path.split('/')[2];
+    if (user?.role !== 'recruiter') {
+      return (
+        <div className="max-w-5xl mx-auto px-6 py-12">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6">Recruiter access required to view matches.</div>
+        </div>
+      );
+    }
     return <JobMatch jobId={id} />;
   }
   if (path.startsWith('/jobs')) return <Jobs />;
   if (path.startsWith('/ask')) return <Ask />;
   if (path.startsWith('/login')) return <Login />;
   if (path.startsWith('/register')) return <Register />;
-  if (path.startsWith('/analytics')) return <Analytics />;
+  if (path.startsWith('/analytics')) {
+    if (user?.role !== 'recruiter') {
+      return (
+        <div className="max-w-5xl mx-auto px-6 py-12">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6">Recruiter access required to view analytics.</div>
+        </div>
+      );
+    }
+    return <Analytics />;
+  }
   if (path.startsWith('/candidates/')) {
     const id = path.split('/')[2];
     return <Candidate id={id} />;

@@ -17,9 +17,11 @@ export default function Nav() {
               <span className="text-2xl font-bold text-gray-900">Resume<span className="text-teal-600">RAG</span></span>
             </a>
             <div className="hidden md:flex items-center gap-1">
-              <a href="#/upload" className="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-teal-600 transition-all font-medium">
-                Upload
-              </a>
+              {(!user || user.role !== 'recruiter') && (
+                <a href="#/upload" className="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-teal-600 transition-all font-medium">
+                  Upload
+                </a>
+              )}
               <a href="#/search" className="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-teal-600 transition-all font-medium">
                 Search
               </a>
@@ -29,9 +31,11 @@ export default function Nav() {
               <a href="#/jobs" className="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-teal-600 transition-all font-medium">
                 Jobs
               </a>
-              <a href="#/analytics" className="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-teal-600 transition-all font-medium">
-                Analytics
-              </a>
+              {user?.role === 'recruiter' && (
+                <a href="#/analytics" className="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-teal-600 transition-all font-medium">
+                  Analytics
+                </a>
+              )}
             </div>
           </div>
           

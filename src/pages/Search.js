@@ -147,14 +147,14 @@ export default function Search() {
               <div className="flex items-start gap-4">
                 {/* Avatar */}
                 <div className="w-12 h-12 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                  {it.filename?.charAt(0).toUpperCase() || 'C'}
+                  {(it.title || it.filename)?.charAt(0).toUpperCase() || 'C'}
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="text-lg font-semibold text-gray-900 group-hover:text-teal-600 transition-colors">
-                      {it.filename}
+                      {it.title || it.filename}
                     </h3>
                     <div className="text-sm text-gray-500 ml-4">
                       Result #{offset + idx + 1}

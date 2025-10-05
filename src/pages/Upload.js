@@ -1,13 +1,24 @@
 import React, { useState } from 'react';
-import { apiFetch } from '../api';
+import { apiFetch, currentUser } from '../api';
 
 export default function Upload() {
+  const user = currentUser();
   const [file, setFile] = useState(null);
   const [idem, setIdem] = useState('');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [dragActive, setDragActive] = useState(false);
+
+  // Block recruiters entirely from this page
+  if (user?.role === 'recruiter') {
+    return (
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">Upload Restricted</h1>
+        <p className="text-gray-600">Recruiters cannot upload resumes. Please use the Search or Jobs pages.</p>
+      </div>
+    );
+  }
 
   const handleDrag = (e) => {
     e.preventDefault();

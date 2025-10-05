@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { apiFetch } from '../api';
+import React, { useEffect, useState } from 'react';
+import { apiFetch, currentUser } from '../api';
 
 export default function Jobs() {
   const [title, setTitle] = useState('');
@@ -10,6 +10,8 @@ export default function Jobs() {
   const [topN, setTopN] = useState(5);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [jobs, setJobs] = useState([]);
+  const user = currentUser();
 
   const create = async (e) => {
     e.preventDefault(); 
@@ -50,6 +52,19 @@ export default function Jobs() {
     }
   };
 
+  // Load existing jobs for everyone (viewer or recruiter)
+  useEffect(() => {
+    const loadJobs = async () => {
+      try {
+        const res = await apiFetch('/api/jobs');
+        setJobs(res.items || []);
+      } catch (e) {
+        // non-fatal
+      }
+    };
+    loadJobs();
+  }, []);
+
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
       {/* Header */}
@@ -58,7 +73,30 @@ export default function Jobs() {
         <p className="text-gray-600">Create a job posting and find the best matching candidates</p>
       </div>
 
-      {/* Create Job Form */}
+      {/* Existing Jobs List (visible to all) */}
+      <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Open Jobs</h2>
+        {jobs.length === 0 ? (
+          <p className="text-gray-500">No jobs yet.</p>
+        ) : (
+          <ul className="divide-y">
+            {jobs.map(j => (
+              <li key={j.id} className="py-3 flex items-center justify-between">
+                <div>
+                  <div className="font-medium text-gray-900">{j.title}</div>
+                  <div className="text-xs text-gray-500">Posted {new Date(j.createdAt).toLocaleString()}</div>
+                </div>
+                {user?.role === 'recruiter' && (
+                  <a href={`#/jobs/${j.id}/match`} className="text-teal-600 hover:text-teal-700 text-sm font-medium">View matches</a>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Create Job Form (recruiters only) */}
+      {user?.role === 'recruiter' && (
       <div className="bg-white rounded-xl shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Create New Job</h2>
         <form onSubmit={create} className="space-y-4">
@@ -132,9 +170,10 @@ export default function Jobs() {
           </button>
         </form>
       </div>
+      )}
 
-      {/* Job Created Success & Matching Section */}
-      {job?.id && (
+      {/* Job Created Success & Matching Section (recruiters only) */}
+      {user?.role === 'recruiter' && job?.id && (
         <div className="space-y-6">
           {/* Success Message */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
