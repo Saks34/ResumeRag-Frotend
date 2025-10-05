@@ -1,4 +1,5 @@
 export const API_BASE = process.env.REACT_APP_API_BASE || 'https://resumerag-server.onrender.com';
+const API_BASE_NORM = (API_BASE || '').replace(/\/+$/, '');
   
   export function getToken() {
     return localStorage.getItem('token') || '';
@@ -11,7 +12,8 @@ export const API_BASE = process.env.REACT_APP_API_BASE || 'https://resumerag-ser
     }
     const token = getToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
+    const p = path.startsWith('/') ? path : `/${path}`;
+    const res = await fetch(`${API_BASE_NORM}${p}`, { ...opts, headers });
     if (!res.ok) {
       const text = await res.text();
       throw new Error(text || `HTTP ${res.status}`);
@@ -25,6 +27,7 @@ export const API_BASE = process.env.REACT_APP_API_BASE || 'https://resumerag-ser
     const data = await apiFetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user || null));
+    return data.user;
   }
 
   // Register a new user
